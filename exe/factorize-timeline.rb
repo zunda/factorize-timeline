@@ -40,6 +40,7 @@ Tw::Client::Stream.new(self_user).user_stream do |tweet|
 	}
 
 	puts tweet.url
+	puts tweet.text
 	text = factors.shift
 	while not factors.empty? and text.length < 140 - factors[0].length - 1
 		text += " " + factors.shift
