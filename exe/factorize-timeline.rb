@@ -6,6 +6,20 @@ require 'rubygems'
 require 'tw'
 require 'prime'
 
+class Array
+  def reject_dup
+    r = Array.new
+    f = Hash.new
+    self.each do |e|
+      unless f[e]
+        r << e
+        f[e] = true
+      end
+    end
+    return r
+  end
+end
+
 Tw::Auth.get_or_regist_user(nil)
 self_user = Tw::Conf['default_user']
 
@@ -16,7 +30,7 @@ puts "Following user stream and tweeting as @#{self_user}"
 Tw::Client::Stream.new(self_user).user_stream do |tweet|
 	next if tweet.user == self_user
 	next if tweet.text =~ /\ART @/
-	nums = tweet.text.scan(/[\d\.-]+/).reject{|e| e =~ /(-|\.)/}.map{|e| e.to_i}.reject{|e| e <= 1}
+	nums = tweet.text.scan(/[\d\.-]+/).reject{|e| e =~ /(-|\.)/}.map{|e| e.to_i}.reject{|e| e <= 1}.reject_dup
 	next if nums.empty?
 
 	factors = nums.map{|n|
