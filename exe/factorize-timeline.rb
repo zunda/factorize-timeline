@@ -15,7 +15,7 @@ client.auth
 puts "Following user stream and tweeting as @#{self_user}"
 Tw::Client::Stream.new(self_user).user_stream do |tweet|
 	next if tweet.user == self_user
-	nums = tweet.text.scan(/(?:[^-\.\d]|\A)(\d+)(?:[^\.\d]|\z)/).map{|e| e[0].to_i}.reject{|e| e <= 1}
+	nums = tweet.text.scan(/[\d\.-]+/).reject{|e| e =~ /(-|\.)/}.map{|e| e.to_i}.reject{|e| e <= 1}
 	next if nums.empty?
 
 	factors = nums.map{|n|
