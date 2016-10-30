@@ -24,11 +24,10 @@ Tw::Client::Stream.new(self_user).user_stream do |tweet|
 		}.join('×')
 	}
 
-	text = ''
-	max = 140 - tweet.url.char_length_with_t_co
-	while not factors.empty? and text.length < max - factors[0].length
-		text += factors.shift + " "
+	puts tweet.url
+	text = factors.shift
+	while not factors.empty? and text.length < 140 - factors[0].length - 1
+		text += " " + factors.shift
 	end
-	text += tweet.url
-	client.tweet(text)
+	client.tweet(text) if text.length < 140
 end
