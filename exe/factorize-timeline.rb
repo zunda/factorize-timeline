@@ -24,6 +24,10 @@ class String
 	def integers
 		self.scan(/[\d\.]+/).reject{|e| e =~ /\./}.map{|e| e.to_i}
 	end
+
+	def rejecrt_urls
+		self.gsub(URI.regexp, '')
+	end
 end
 
 if __FILE__ == $0
@@ -37,7 +41,7 @@ if __FILE__ == $0
 	Tw::Client::Stream.new(self_user).user_stream do |tweet|
 		next if tweet.user == self_user
 		next if tweet.text =~ /\ART @/
-		nums = tweet.text.integers.reject{|e| e <= 1}.reject_dup
+		nums = tweet.text.rejecrt_urls.integers.reject{|e| e <= 1}.reject_dup
 		next if nums.empty?
 
 		factors = nums.map{|n|
