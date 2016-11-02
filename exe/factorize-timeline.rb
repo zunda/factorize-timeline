@@ -45,9 +45,14 @@ if __FILE__ == $0
 		next if nums.empty?
 
 		factors = nums.map{|n|
-			"#{n}=" + Prime.prime_division(n).reverse.map{|b,e|
-				e > 1 ? "#{b}^#{e}" : b.to_s
-			}.join('×')
+			primes = Prime.prime_division(n)
+			if primes.length == 1 and primes[0][1] == 1
+				"#{n}は素数です"
+			else
+				"#{n}=" + primes.reverse.map{|b, e|
+					e > 1 ? "#{b}^#{e}" : b.to_s
+				}.join('×')
+			end
 		}
 
 		puts tweet.url
