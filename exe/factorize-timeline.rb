@@ -22,7 +22,7 @@ end
 
 class String
 	def integers
-		self.scan(/[\d\.]+/).reject{|e| e =~ /\./}.map{|e| e.to_i}
+		self.scan(/[\d\.]+/).reject{|e| e =~ /\.\d/}.map{|e| e.to_i}
 	end
 
 	def rejecrt_urls
