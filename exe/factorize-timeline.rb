@@ -55,12 +55,18 @@ if __FILE__ == $0
 			end
 		}
 
-		puts tweet.url
-		puts tweet.text
-		text = factors.shift
+		puts "\n#{tweet.url}\n#{tweet.text}"
+
+		text = ''
+		opts = {}
+		if tweet.text =~ /\A@#{self_user} /
+			text = "@#{tweet.user} "
+			opts[:in_reply_to_status_id] = tweet.id
+		end
+		text += factors.shift
 		while not factors.empty? and text.length < 140 - factors[0].length - 1
 			text += " " + factors.shift
 		end
-		client.tweet(text) if text.length < 140
+		client.tweet(text, opts) if text.length < 140
 	end
 end
