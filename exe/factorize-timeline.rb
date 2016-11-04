@@ -28,6 +28,10 @@ class String
 	def no_urls
 		self.gsub(URI.regexp, ' ')
 	end
+
+	def no_usernames
+		self.gsub(/(?!\w)@\w+/, ' ')
+	end
 end
 
 if __FILE__ == $0
@@ -41,7 +45,7 @@ if __FILE__ == $0
 	Tw::Client::Stream.new(self_user).user_stream do |tweet|
 		next if tweet.user == self_user
 		next if tweet.text =~ /\ART @/
-		nums = tweet.text.no_urls.integers.reject{|e| e <= 1}.reject_dup
+		nums = tweet.text.no_urls.no_usernames.integers.reject{|e| e <= 1}.reject_dup
 		next if nums.empty?
 
 		factors = nums.map{|n|
