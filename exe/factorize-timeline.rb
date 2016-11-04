@@ -26,7 +26,7 @@ class String
 	end
 
 	def no_urls
-		self.gsub(URI.regexp, '')
+		self.gsub(URI.regexp, ' ')
 	end
 end
 
