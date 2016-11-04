@@ -71,6 +71,7 @@ if __FILE__ == $0
 		while not factors.empty? and text.length < 140 - factors[0].length - 1
 			text += " " + factors.shift
 		end
+		puts "sending: #{text}"
 		client.tweet(text, opts) if text.length < 140
 	end
 end
