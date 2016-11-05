@@ -42,36 +42,41 @@ if __FILE__ == $0
 	client.auth
 
 	puts "Following user stream and tweeting as @#{self_user}"
-	Tw::Client::Stream.new(self_user).user_stream do |tweet|
-		next if tweet.user == self_user
-		next if tweet.text =~ /\ART @/
-		nums = tweet.text.no_urls.no_usernames.integers.reject{|e| e <= 1}.reject_dup
-		next if nums.empty?
+	begin
+		Tw::Client::Stream.new(self_user).user_stream do |tweet|
+			next if tweet.user == self_user
+			next if tweet.text =~ /\ART @/
+			nums = tweet.text.no_urls.no_usernames.integers.reject{|e| e <= 1}.reject_dup
+			next if nums.empty?
 
-		factors = nums.map{|n|
-			primes = Prime.prime_division(n)
-			if primes.length == 1 and primes[0][1] == 1
-				"#{n}は素数です"
-			else
-				"#{n}=" + primes.reverse.map{|b, e|
-					e > 1 ? "#{b}^#{e}" : b.to_s
-				}.join('×')
+			factors = nums.map{|n|
+				primes = Prime.prime_division(n)
+				if primes.length == 1 and primes[0][1] == 1
+					"#{n}は素数です"
+				else
+					"#{n}=" + primes.reverse.map{|b, e|
+						e > 1 ? "#{b}^#{e}" : b.to_s
+					}.join('×')
+				end
+			}
+
+			puts "\n#{tweet.url}\n#{tweet.text}"
+
+			text = ''
+			opts = {}
+			if tweet.text =~ /\A@#{self_user} /
+				text = "@#{tweet.user} "
+				opts[:in_reply_to_status_id] = tweet.id
 			end
-		}
-
-		puts "\n#{tweet.url}\n#{tweet.text}"
-
-		text = ''
-		opts = {}
-		if tweet.text =~ /\A@#{self_user} /
-			text = "@#{tweet.user} "
-			opts[:in_reply_to_status_id] = tweet.id
+			text += factors.shift
+			while not factors.empty? and text.length < 140 - factors[0].length - 1
+				text += " " + factors.shift
+			end
+			puts "sending: #{text}"
+			client.tweet(text, opts) if text.length < 140
 		end
-		text += factors.shift
-		while not factors.empty? and text.length < 140 - factors[0].length - 1
-			text += " " + factors.shift
-		end
-		puts "sending: #{text}"
-		client.tweet(text, opts) if text.length < 140
+	rescue Net::ReadTimeout => e
+		puts e
+		retry
 	end
 end
