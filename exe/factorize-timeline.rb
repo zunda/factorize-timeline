@@ -6,6 +6,8 @@ require 'rubygems'
 require 'tw'
 require 'prime'
 
+WAIT_DEFAULT = 10 # initial wait (sec) for exponentilal back off
+
 class Array
 	def reject_dup
 		r = Array.new
@@ -41,6 +43,8 @@ if __FILE__ == $0
 	client = Tw::Client.new
 	client.auth
 
+	wait_on_error = WAIT_DEFAULT
+
 	puts "Following user stream and tweeting as @#{self_user}"
 	begin
 		Tw::Client::Stream.new(self_user).user_stream do |tweet|
@@ -74,9 +78,12 @@ if __FILE__ == $0
 			end
 			puts "sending: #{text}"
 			client.tweet(text, opts) if text.length < 140
+			wait_on_error = WAIT_DEFAULT
 		end
-	rescue Net::ReadTimeout => e
+	rescue Net::ReadTimeout, Errno::EHOSTUNREACH => e
 		puts e
+		sleep wait_on_error
+		wait_on_error *= 1.5
 		retry
 	end
 end
