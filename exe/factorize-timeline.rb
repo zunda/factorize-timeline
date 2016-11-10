@@ -81,7 +81,9 @@ if __FILE__ == $0
 			wait_on_error = WAIT_DEFAULT
 		end
 	rescue Net::ReadTimeout, Errno::EHOSTUNREACH => e
-		puts e
+		puts e.message
+		puts e.backtrace
+		puts "Retrying after #{wait_on_error} seconds"
 		sleep wait_on_error
 		wait_on_error *= 1.5
 		retry
