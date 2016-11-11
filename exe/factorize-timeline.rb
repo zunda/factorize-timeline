@@ -46,46 +46,50 @@ if __FILE__ == $0
 	wait_on_error = WAIT_DEFAULT
 
 	puts "Following user stream and tweeting as @#{self_user}"
-	begin
-		Tw::Client::Stream.new(self_user).user_stream do |tweet|
-			next if tweet.user == self_user
-			next if tweet.text =~ /\ART @/
-			nums = tweet.text.no_urls.no_usernames.integers.reject{|e| e <= 1}.reject_dup
-			next if nums.empty?
+	loop do
+		begin
+			Tw::Client::Stream.new(self_user).user_stream do |tweet|
+				next if tweet.user == self_user
+				next if tweet.text =~ /\ART @/
+				nums = tweet.text.no_urls.no_usernames.integers.reject{|e| e <= 1}.reject_dup
+				next if nums.empty?
 
-			factors = nums.map{|n|
-				primes = Prime.prime_division(n)
-				if primes.length == 1 and primes[0][1] == 1
-					"#{n}は素数です"
-				else
-					"#{n}=" + primes.reverse.map{|b, e|
-						e > 1 ? "#{b}^#{e}" : b.to_s
-					}.join('×')
+				factors = nums.map{|n|
+					primes = Prime.prime_division(n)
+					if primes.length == 1 and primes[0][1] == 1
+						"#{n}は素数です"
+					else
+						"#{n}=" + primes.reverse.map{|b, e|
+							e > 1 ? "#{b}^#{e}" : b.to_s
+						}.join('×')
+					end
+				}
+
+				puts "\n#{tweet.url}\n#{tweet.text}"
+
+				text = ''
+				opts = {}
+				if tweet.text =~ /\A@#{self_user} /
+					text = "@#{tweet.user} "
+					opts[:in_reply_to_status_id] = tweet.id
 				end
-			}
-
-			puts "\n#{tweet.url}\n#{tweet.text}"
-
-			text = ''
-			opts = {}
-			if tweet.text =~ /\A@#{self_user} /
-				text = "@#{tweet.user} "
-				opts[:in_reply_to_status_id] = tweet.id
+				text += factors.shift
+				while not factors.empty? and text.length < 140 - factors[0].length - 1
+					text += " " + factors.shift
+				end
+				puts "sending: #{text}"
+				client.tweet(text, opts) if text.length < 140
+				wait_on_error = WAIT_DEFAULT
 			end
-			text += factors.shift
-			while not factors.empty? and text.length < 140 - factors[0].length - 1
-				text += " " + factors.shift
-			end
-			puts "sending: #{text}"
-			client.tweet(text, opts) if text.length < 140
-			wait_on_error = WAIT_DEFAULT
+		rescue Net::ReadTimeout, Errno::EHOSTUNREACH => e
+			puts e.message
+			puts e.backtrace
+			puts "Retrying after #{wait_on_error} seconds"
+			sleep wait_on_error
+			wait_on_error *= 1.5
+			retry
 		end
-	rescue Net::ReadTimeout, Errno::EHOSTUNREACH => e
-		puts e.message
-		puts e.backtrace
-		puts "Retrying after #{wait_on_error} seconds"
+		puts "\nDisconnected from userstream. Retrying after #{wait_on_error} seconds"
 		sleep wait_on_error
-		wait_on_error *= 1.5
-		retry
 	end
 end
