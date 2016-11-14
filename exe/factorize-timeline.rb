@@ -82,6 +82,7 @@ if __FILE__ == $0
 				wait_on_error = WAIT_DEFAULT
 			end
 		rescue Net::ReadTimeout, Errno::EHOSTUNREACH => e
+			puts Time.now.utc
 			puts e.message
 			puts e.backtrace
 			puts "Retrying after #{wait_on_error} seconds"
@@ -89,7 +90,7 @@ if __FILE__ == $0
 			wait_on_error *= 1.5
 			retry
 		end
-		puts "\nDisconnected from userstream. Retrying after #{wait_on_error} seconds"
+		puts "\n#{Time.now.utc}\nDisconnected from userstream. Retrying after #{wait_on_error} seconds"
 		sleep wait_on_error
 	end
 end
