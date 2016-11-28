@@ -5,8 +5,10 @@
 require 'rubygems'
 require 'tw'
 require 'prime'
+require 'timeout'
 
 WAIT_DEFAULT = 10 # initial wait (sec) for exponentilal back off
+PRIMEDIV_TIMEOUT = 30	# time (sec) allowed to factorize
 
 class Array
 	def reject_dup
@@ -36,6 +38,21 @@ class String
 	end
 end
 
+def factorize(n)
+	begin
+		primes = Timeout.timeout(PRIMEDIV_TIMEOUT){Prime.prime_division(n)}
+		if primes.length == 1 and primes[0][1] == 1
+			"#{n}は素数です"
+		else
+			"#{n}=" + primes.reverse.map{|b, e|
+				e > 1 ? "#{b}^#{e}" : b.to_s
+			}.join('×')
+		end
+	rescue Timeout::Error
+			"#{n}を素因数分解する時間がありませんでした"
+	end
+end
+
 if __FILE__ == $0
 	Tw::Auth.get_or_regist_user(nil)
 	self_user = Tw::Conf['default_user']
@@ -54,16 +71,7 @@ if __FILE__ == $0
 				nums = tweet.text.no_urls.no_usernames.integers.reject{|e| e <= 1}.reject_dup
 				next if nums.empty?
 
-				factors = nums.map{|n|
-					primes = Prime.prime_division(n)
-					if primes.length == 1 and primes[0][1] == 1
-						"#{n}は素数です"
-					else
-						"#{n}=" + primes.reverse.map{|b, e|
-							e > 1 ? "#{b}^#{e}" : b.to_s
-						}.join('×')
-					end
-				}
+				factors = nums.map{|n| factorize(n)}
 
 				puts "\n#{tweet.url}\n#{tweet.text}"
 
