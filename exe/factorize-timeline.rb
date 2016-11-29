@@ -54,6 +54,7 @@ def factorize(n)
 end
 
 if __FILE__ == $0
+	$stdout.sync = true
 	Tw::Auth.get_or_regist_user(nil)
 	self_user = Tw::Conf['default_user']
 
@@ -88,7 +89,6 @@ if __FILE__ == $0
 				puts "sending: #{text}"
 				client.tweet(text, opts) if text.length < 140
 				wait_on_error = WAIT_DEFAULT
-				$stdout.flush
 			end
 		rescue Net::ReadTimeout, Errno::EHOSTUNREACH => e
 			puts Time.now.utc
@@ -97,11 +97,9 @@ if __FILE__ == $0
 			puts "Retrying after #{wait_on_error} seconds"
 			sleep wait_on_error
 			wait_on_error *= 1.5
-			$stdout.flush
 			retry
 		end
 		puts "\n#{Time.now.utc}\nDisconnected from userstream. Retrying after #{wait_on_error} seconds"
-		$stdout.flush
 		sleep wait_on_error
 	end
 end
