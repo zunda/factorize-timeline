@@ -90,16 +90,12 @@ if __FILE__ == $0
 				client.tweet(text, opts) if text.length < 140
 				wait_on_error = WAIT_DEFAULT
 			end
-		rescue Net::ReadTimeout, Errno::EHOSTUNREACH => e
-			puts Time.now.utc
+		rescue Net::ReadTimeout, Net::OpenTimeout, Errno::EHOSTUNREACH => e
 			puts e.message
 			puts e.backtrace
-			puts "Retrying after #{wait_on_error} seconds"
-			sleep wait_on_error
-			wait_on_error *= 1.5
-			retry
 		end
-		puts "\n#{Time.now.utc}\nDisconnected from userstream. Retrying after #{wait_on_error} seconds"
+		puts "#{Time.now.utc}: Retrying after #{wait_on_error} seconds"
 		sleep wait_on_error
+		wait_on_error *= 1.5
 	end
 end
