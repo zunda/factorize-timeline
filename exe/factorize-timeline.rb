@@ -53,6 +53,14 @@ def factorize(n)
 	end
 end
 
+module Tw
+	class Tweet
+		def url_no_mention
+			"https://twitter.com/#{user}-/status/#{id}"
+		end
+	end
+end
+
 if __FILE__ == $0
 	$stdout.sync = true
 	Tw::Auth.get_or_regist_user(nil)
@@ -76,16 +84,21 @@ if __FILE__ == $0
 
 				puts "\n#{tweet.url}\n#{tweet.text}"
 
+
 				text = ''
+				ref = ''
 				opts = {}
 				if tweet.text =~ /\A@#{self_user} /
 					text = "@#{tweet.user} "
 					opts[:in_reply_to_status_id] = tweet.id
+				else
+					ref = ' ' + tweet.url_no_mention
 				end
 				text += factors.shift
-				while not factors.empty? and text.length < 140 - factors[0].length - 1
+				while not factors.empty? and text.length < 140 - factors[0].length - 1 - ref.length
 					text += " " + factors.shift
 				end
+				text += " " + ref
 				puts "sending: #{text}"
 				client.tweet(text, opts) if text.length < 140
 				wait_on_error = WAIT_DEFAULT
