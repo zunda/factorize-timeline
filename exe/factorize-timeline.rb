@@ -98,7 +98,7 @@ if __FILE__ == $0
 				while not factors.empty? and text.length < 140 - factors[0].length - 1 - ref.length
 					text += " " + factors.shift
 				end
-				text += " " + ref
+				text += ref
 				puts "sending: #{text}"
 				client.tweet(text, opts) if text.length < 140
 				wait_on_error = WAIT_DEFAULT
