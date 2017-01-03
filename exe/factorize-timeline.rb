@@ -6,6 +6,7 @@ require 'rubygems'
 require 'tw'
 require 'prime'
 require 'timeout'
+require 'unf'
 
 WAIT_DEFAULT = 10 # initial wait (sec) for exponentilal back off
 PRIMEDIV_TIMEOUT = 30	# time (sec) allowed to factorize
@@ -26,7 +27,8 @@ end
 
 class String
 	def integers
-		self.gsub(/,(\d{3})(?!\d)/, '\1').scan(/[\d\.]+/).reject{|e| e =~ /\.\d/}.map{|e| e.to_i}
+		text = UNF::Normalizer.normalize(self, :nfkc).gsub(/,(\d{3})(?!\d)/, '\1')
+		text.scan(/[\d\.]+/).reject{|e| e =~ /\.\d/}.map{|e| e.to_i}
 	end
 
 	def no_urls
