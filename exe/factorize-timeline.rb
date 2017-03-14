@@ -105,7 +105,7 @@ if __FILE__ == $0
 				client.tweet(text, opts) if text.length < 140
 				wait_on_error = WAIT_DEFAULT
 			end
-		rescue Net::ReadTimeout, Net::OpenTimeout, Errno::EHOSTUNREACH => e
+		rescue Net::ReadTimeout, Net::OpenTimeout, Errno::EHOSTUNREACH, Twitter::Error::Unauthorized => e
 			puts e.message
 			puts e.backtrace
 		end
