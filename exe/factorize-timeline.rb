@@ -28,7 +28,9 @@ end
 class String
 	def integers
 		text = UNF::Normalizer.normalize(self, :nfkc).gsub(/,(\d{3})(?!\d)/, '\1')
-		text.scan(/[\d\.]+/).reject{|e| e =~ /\.\d/}.map{|e| e.to_i}
+		text.gsub!(/(\d+),(\d+)/, '\1\2')	# remove commas
+		text.gsub!(/\d+\.\d+/, ' ')	# remove decimal numbers
+		text.scan(/\d+/).map{|e| e.to_i}
 	end
 
 	def no_urls
@@ -105,7 +107,7 @@ if __FILE__ == $0
 				client.tweet(text, opts) if text.length < 140
 				wait_on_error = WAIT_DEFAULT
 			end
-		rescue Net::ReadTimeout, Net::OpenTimeout, Errno::EHOSTUNREACH, Twitter::Error::Unauthorized, EOFError, Twitter::Error::ServiceUnavailable => e
+		rescue Net::ReadTimeout, Net::OpenTimeout, Errno::EHOSTUNREACH, Twitter::Error::Unauthorized, EOFError, Twitter::Error::ServiceUnavailable, Twitter::Error => e
 			puts e.message
 			puts e.backtrace
 		end
